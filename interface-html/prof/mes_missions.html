@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Missions Actives</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* En-tête */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 30px;
+            padding: 10px 0;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 0;
+            width: 45px;
+            height: 45px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #000;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Liste des missions */
+        .mission-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Ligne de mission */
+        .mission-item {
+            background-color: #3d3d3d; /* Gris foncé de l'image */
+            border-radius: 12px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .mission-info h2 {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+            font-weight: normal;
+        }
+
+        .mission-info p {
+            font-family: Arial, sans-serif;
+            font-size: 0.85rem;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+
+        /* Groupe d'actions (Icônes + Toggle) */
+        .mission-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .action-icon {
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: white;
+            user-select: none;
+        }
+
+        /* Style du Toggle (Switch) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 55px;
+            height: 28px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #9e9e9e;
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4cd964; /* Vert de l'image */
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="/prof/dashboard" class="back-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </a>
+        <h1>Mes Missions Actives</h1>
+    </div>
+
+    <div class="mission-list">
+        
+        <div class="mission-item">
+            <div class="mission-info">
+                <h2>Mission Math</h2>
+                <p>Scientifique</p>
+            </div>
+            <div class="mission-actions">
+                <span class="action-icon" onclick="addStudents()">+</span>
+                <span class="action-icon" onclick="editMission()">✏️</span>
+                <label class="switch">
+                    <input type="checkbox" checked onchange="toggleMission(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="mission-item">
+            <div class="mission-info">
+                <h2>Quiz Géographie</h2>
+                <p>Sciences Humaines</p>
+            </div>
+            <div class="mission-actions">
+                <span class="action-icon" onclick="addStudents()">+</span>
+                <span class="action-icon" onclick="editMission()">✏️</span>
+                <label class="switch">
+                    <input type="checkbox" checked onchange="toggleMission(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="mission-item">
+            <div class="mission-info">
+                <h2> Mémoire</h2>
+                <p>Logique</p>
+            </div>
+            <div class="mission-actions">
+                <span class="action-icon" onclick="addStudents()">+</span>
+                <span class="action-icon" onclick="editMission()">✏️</span>
+                <label class="switch">
+                    <input type="checkbox" onchange="toggleMission(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="mission-item">
+            <div class="mission-info">
+                <h2>Science Quiz</h2>
+                <p>Scientifique</p>
+            </div>
+            <div class="mission-actions">
+                <span class="action-icon" onclick="addStudents()">+</span>
+                <span class="action-icon" onclick="editMission()">✏️</span>
+                <label class="switch">
+                    <input type="checkbox" onchange="toggleMission(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+    </div>
+
+    {% include 'prof/bottom_nav.html' %}
+
+    <script>
+        function addStudents() {
+            alert("Ajouter des élèves - Bientôt disponible!");
+        }
+
+        function editMission() {
+            alert("Modifier la mission - Bientôt disponible!");
+        }
+
+        function toggleMission(checkbox) {
+            if (checkbox.checked) {
+                console.log("Mission activée");
+            } else {
+                console.log("Mission désactivée");
+            }
+        }
+    </script>
+
+</body>
+</html>

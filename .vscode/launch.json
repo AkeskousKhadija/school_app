@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter Web (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=https://pbksrckspuschimrvlyk.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=sb_publishable_OcTw8N5nF8K4LTN0FsrkIA_jtqAmgtS"
+      ]
+    },
+    {
+      "name": "Flutter Android",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "android",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=https://pbksrckspuschimrvlyk.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=sb_publishable_OcTw8N5nF8K4LTN0FsrkIA_jtqAmgtS"
+      ]
+    },
+    {
+      "name": "Flutter Windows",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "windows",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=https://pbksrckspuschimrvlyk.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=sb_publishable_OcTw8N5nF8K4LTN0FsrkIA_jtqAmgtS"
+      ]
+    },
+    {
+      "name": "Flutter Web (Edge)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "edge",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=https://pbksrckspuschimrvlyk.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=sb_publishable_OcTw8N5nF8K4LTN0FsrkIA_jtqAmgtS"
+      ]
+    }
+  ]
+}

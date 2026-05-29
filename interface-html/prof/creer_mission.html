@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Créer une Mission</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-paper: #f0ede5;
+            --nav-blue: #142d63;
+            --form-blue: #1d3557;
+            --accent-orange: #f39200;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-paper);
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 35px 35px;
+            font-family: 'Roboto Condensed', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 110px;
+        }
+
+        /* --- HEADER --- */
+        .header-nav {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .btn-back {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            border: 2px solid #000;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.5rem; font-weight: bold;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.1);
+        }
+
+        h1 { flex-grow: 1; text-align: center; font-family: 'Anton', sans-serif; text-transform: uppercase; font-size: 1.4rem; }
+
+        /* --- FORMULAIRE --- */
+        .form-container {
+            width: 90%;
+            max-width: 380px;
+            background-color: var(--form-blue);
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group label {
+            color: white;
+            font-family: 'Anton', sans-serif;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .custom-input {
+            width: 100%;
+            height: 55px;
+            background-color: var(--accent-orange);
+            border: 2px solid white;
+            border-radius: 15px;
+            padding: 0 15px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            outline: none;
+        }
+
+        .custom-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .btn-suivant {
+            margin-top: 10px;
+            align-self: center;
+            background-color: var(--accent-orange);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 40px;
+            font-family: 'Anton', sans-serif;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 4px 0px #b36b00;
+            transition: transform 0.1s;
+        }
+
+        .btn-suivant:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        /* --- BARRE DE NAVIGATION --- */
+        .bottom-nav-container {
+            position: fixed; bottom: 0; width: 100%; max-width: 450px;
+            height: 80px; display: flex; justify-content: center;
+        }
+        .nav-background {
+            background: var(--nav-blue);
+            width: 92%; height: 60px;
+            align-self: flex-end;
+            border-radius: 30px 30px 0 0;
+            display: flex; justify-content: space-around; align-items: center;
+            position: relative;
+        }
+        .nav-center-cutout {
+            position: absolute; top: -38px;
+            width: 90px; height: 90px;
+            background: var(--bg-paper); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-plus-main {
+            width: 75px; height: 75px;
+            background: var(--nav-blue); border: 4px solid var(--bg-paper);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 2.5rem; cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        .nav-item { color: white; text-align: center; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; width: 80px; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-nav">
+        <div class="btn-back" onclick="window.location.href='/dashboard'"> ← </div>
+        <h1>{% if mission %}MODIFIER{% else %}CREE A{% endif %} MISSION</h1>
+    </div>
+
+    <form class="form-container" action="{% if mission %}/prof/edit_mission/{{ mission.id }}{% else %}/prof/creer_mission{% endif %}" method="POST">
+        <div class="input-group">
+            <label>MISSION TITLE</label>
+            <input type="text" class="custom-input" name="titre" placeholder="Entrez le titre" value="{{ mission.titre if mission else '' }}">
+        </div>
+
+        <div class="input-group">
+            <label>MATIER</label>
+            <input type="text" class="custom-input" name="matiere" placeholder="Entrez la matière" value="{{ mission.matiere if mission else '' }}">
+        </div>
+
+        <div class="input-group">
+            <label>NIVEAU</label>
+            <input type="text" class="custom-input" name="niveau" placeholder="Entrez le niveau" value="{{ mission.niveau if mission else '' }}">
+        </div>
+
+        <div class="input-group">
+            <label>CLASSE</label>
+            <input type="text" class="custom-input" name="classe" placeholder="Entrez la classe" value="{{ mission.classe if mission else '' }}">
+        </div>
+
+        <button type="submit" class="btn-suivant">SUIVANT</button>
+    </form>
+
+    {% include 'prof/bottom_nav.html' %}
+
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Inscription</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Arvo:wght@700&family=Rubik+Moonrocks&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-paper: #f2efea;
+            --grid-line: #d1cfc9;
+            --dark-blue: #1a2e78;
+            --light-blue: #3a98c7;
+            --off-white: #f0ede4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            background-color: var(--bg-paper);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Arrière-plan quadrillé */
+        .grid-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/img/background.svg');
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Carte Bleue Principale */
+        .register-card {
+            background-color: var(--dark-blue);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 30px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .register-card h1 {
+            color: white;
+            font-family: 'Rubik Moonrocks', 'Anton', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.15);
+            filter: contrast(120%);
+        }
+
+        /* Switch Enseignant / Etudiant */
+        .toggle-container {
+            background-color: var(--off-white);
+            display: flex;
+            border-radius: 50px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            padding: 2px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            font-family: 'Impact', sans-serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #888;
+            transition: 0.3s;
+            border-radius: 50px;
+        }
+
+        .toggle-btn.active {
+            background-color: var(--light-blue);
+            color: white;
+        }
+
+        /* Formulaire */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: 'Arvo', serif;
+            color: #333;
+        }
+
+        /* Icônes simulées (Emoji ou Caractères Spéciaux) */
+        .icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            color: #3a98c7;
+        }
+
+        /* Bouton S'inscrire */
+        .btn-submit {
+            background-color: var(--light-blue);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 50px;
+            font-family: 'Impact', sans-serif;
+            font-size: 1.5rem;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.95);
+        }
+
+        /* Retour */
+        .back-link {
+            color: white;
+            margin-top: 20px;
+            display: inline-block;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Message d'erreur */
+        .error-message {
+            color: #ff6b6b;
+            background-color: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-background"></div>
+
+    <div class="main-container">
+        <div class="register-card">
+        <h1>Fais partie de QAMAR !</h1>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <div class="toggle-container">
+            <button class="toggle-btn active" id="btn-prof" onclick="setRole('teacher')">Enseignant</button>
+            <button class="toggle-btn" id="btn-eleve" onclick="setRole('student')">Etudiant</button>
+        </div>
+
+        <form id="registerForm">
+            <input type="hidden" id="role" value="teacher">
+            
+            <div class="input-group">
+                <div class="input-container">
+                    <span class="icon"><i class="fas fa-user"></i></span>
+                    <input type="text" id="nom" placeholder="Nom" required>
+                </div>
+                <div class="input-container">
+                    <span class="icon"><i class="fas fa-user"></i></span>
+                    <input type="text" id="prenom" placeholder="Prénom" required>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <span class="icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="email" placeholder="Email" required>
+            </div>
+
+            <div class="input-container">
+                <span class="icon"><i class="fas fa-phone"></i></span>
+                <input type="tel" id="telephone" placeholder="Téléphone" required>
+            </div>
+
+            <!-- Niveau (visible uniquement pour les étudiants) -->
+            <div class="input-container" id="niveauContainer" style="display: none;">
+                <select id="niveau" style="width: 100%; padding: 12px 15px 12px 45px; border-radius: 50px; border: none; font-size: 1rem; font-weight: bold; color: #333;">
+                    <option value="">Sélectionner le niveau</option>
+                    <option value="primaire">Primaire</option>
+                    <option value="college">Collège</option>
+                    <option value="lycee">Lycée</option>
+                </select>
+            </div>
+
+            <div class="input-container">
+                <span class="icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="password" placeholder="Mot de passe" required>
+            </div>
+
+            <div class="input-container">
+                <span class="icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="confirmPassword" placeholder="Confirmer le mot de passe" required>
+            </div>
+
+            <button type="submit" class="btn-submit">S'inscrire</button>
+        </form>
+
+        <a href="/frame3" class="back-link">← Retour</a>
+    </div>
+</div>
+
+    <script>
+        function setRole(role) {
+            const btnProf = document.getElementById('btn-prof');
+            const btnEleve = document.getElementById('btn-eleve');
+            const niveauContainer = document.getElementById('niveauContainer');
+            const roleInput = document.getElementById('role');
+            
+            if (role === 'teacher') {
+                btnProf.classList.add('active');
+                btnEleve.classList.remove('active');
+                niveauContainer.style.display = 'none';
+                roleInput.value = 'teacher';
+                console.log("Mode Enseignant sélectionné");
+            } else {
+                btnEleve.classList.add('active');
+                btnProf.classList.remove('active');
+                niveauContainer.style.display = 'block';
+                roleInput.value = 'student';
+                console.log("Mode Etudiant sélectionné");
+            }
+        }
+
+        document.getElementById('registerForm').onsubmit = async function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (password !== confirmPassword) {
+                errorMessage.textContent = "Les mots de passe ne correspondent pas";
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            const formData = {
+                role: document.getElementById('role').value,
+                nom: document.getElementById('nom').value,
+                prenom: document.getElementById('prenom').value,
+                email: document.getElementById('email').value,
+                telephone: document.getElementById('telephone').value,
+                password: password
+            };
+            
+            // Ajouter le niveau pour les étudiants
+            if (formData.role === 'student') {
+                formData.niveau = document.getElementById('niveau').value;
+                if (!formData.niveau) {
+                    errorMessage.textContent = "Veuillez sélectionner un niveau";
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = result.redirect;
+                } else {
+                    errorMessage.textContent = result.message;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = "Erreur lors de l'inscription";
+                errorMessage.style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>

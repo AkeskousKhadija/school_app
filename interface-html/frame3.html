@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Compte</title>
+    <style>
+        :root {
+            --bg-paper: #f2efea;
+            --grid-line: #d1cfc9;
+            --primary-blue: #3a98c7;
+            --text-dark: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-paper);
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Arrière-plan quadrillé */
+        .grid-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/img/background.svg');
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        .main-container {
+            width: 95%;
+            max-width: 450px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Illustration centrale */
+        .illustration-box {
+            width: 100%;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .illustration-box img {
+            max-width: 85%;
+            height: auto;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+        }
+
+        /* Texte de la question */
+        h2 {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 40px;
+            letter-spacing: 0.5px;
+            /* Utilisation d'une police condensée si possible */
+            font-family: 'Impact', sans-serif;
+        }
+
+        /* Conteneur des boutons */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Style commun des boutons */
+        .btn {
+            background-color: var(--primary-blue);
+            color: white;
+            text-decoration: none;
+            padding: 12px 10px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            flex: 1; /* Pour qu'ils aient la même largeur */
+            max-width: 180px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            background-color: #2e7ca3;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="grid-background"></div>
+
+    <div class="main-container">
+        <div class="illustration-box">
+            <img src="/img/img3.svg" alt="Education Illustration">
+        </div>
+
+        <h2>Avez-vous déjà un compte ?</h2>
+
+        <div class="button-group">
+            <button class="btn" onclick="login()">SE CONNECTER</button>
+            <button class="btn" onclick="signup()">S'INSCRIRE</button>
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            console.log("Direction page de connexion");
+            window.location.href = "/login";
+        }
+
+        function signup() {
+            console.log("Direction page d'inscription");
+            window.location.href = "/register";
+        }
+    </script>
+</body>
+</html>

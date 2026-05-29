@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Bienvenu</title>
+    <style>
+        /* Couleurs et Variables */
+        :root {
+            --bg-paper: #f2efea;
+            --grid-line: #d1cfc9;
+            --primary-blue: #3a98c7;
+            --text-dark: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-paper);
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Arrière-plan quadrillé */
+        .grid-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/img/background.svg');
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        /* Conteneur Principal */
+        .main-container {
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Illustration (Placeholder pour votre image) */
+        .illustration-box {
+            width: 60%;
+            margin-bottom: 30px;
+        }
+
+        .illustration-box img {
+            width: 100%;
+            height: auto;
+            /* Filtre léger pour adoucir les bords si besoin */
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.05));
+        }
+
+        /* Titre "BIENVENU !" */
+        h1 {
+            font-size: 2rem;
+            letter-spacing: 2px;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        /* Texte de description */
+        p {
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-dark);
+            margin-bottom: 40px;
+            padding: 0 10px;
+        }
+
+        /* Bouton COMMENCER */
+        .btn-commencer {
+            background-color: var(--primary-blue);
+            color: white;
+            text-decoration: none;
+            padding: 12px 60px;
+            border-radius: 50px; /* Bords très arrondis */
+            font-size: 1.6rem;
+            text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background-color 0.2s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-commencer:active {
+            transform: scale(0.95);
+            background-color: #2e7ca3;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="grid-background"></div>
+
+    <div class="main-container">
+        <div class="illustration-box">
+            <img src="/img/img2.svg" alt="App Illustration">
+        </div>
+
+        <h1>BIENVENU !</h1>
+
+        <p>
+            QAMAR est une application qui rend l'apprentissage à distance ludique et aide les enfants à utiliser leur téléphone de manière positive.
+        </p>
+
+        <button class="btn-commencer" onclick="startApp()">COMMENCER</button>
+    </div>
+
+    <script>
+        function startApp() {
+            console.log("Démarrage de l'application...");
+            // Redirection vers frame3 (choix compte)
+            window.location.href = "/frame3";
+        }
+    </script>
+</body>
+</html>

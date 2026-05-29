@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Connexion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Arvo:wght@700&family=Rubik+Moonrocks&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-paper: #f2efea;
+            --grid-line: #d1cfc9;
+            --light-blue: #3a98c7;
+            --dark-blue: #1a2e78;
+            --text-white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            background-color: var(--bg-paper);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Arrière-plan quadrillé */
+        .grid-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/img/background.svg');
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Carte de Connexion (Style image_c46544.png) */
+        .login-card {
+            background-color: var(--light-blue);
+            width: 90%;
+            max-width: 380px;
+            border-radius: 40px;
+            padding: 40px 25px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .login-card h1 {
+            color: var(--text-white);
+            font-family: 'Rubik Moonrocks', 'Anton', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.15);
+            filter: contrast(120%);
+        }
+
+        /* Conteneur d'input */
+        .input-container {
+            position: relative;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: 'Arvo', serif;
+            color: #333;
+            background-color: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Icônes de saisie */
+        .icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #3a98c7;
+        }
+
+        /* Bouton Se connecter */
+        .btn-connect {
+            background-color: var(--dark-blue);
+            color: white;
+            border: none;
+            padding: 14px 45px;
+            border-radius: 50px;
+            font-family: 'Impact', sans-serif;
+            font-size: 1.6rem;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-connect:active {
+            transform: scale(0.96);
+            background-color: #121e50;
+        }
+
+        /* Message d'erreur */
+        .error-message {
+            color: #ffeb3b;
+            background-color: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* Lien vers inscription */
+        .register-link {
+            color: var(--text-white);
+            margin-top: 25px;
+            display: inline-block;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .register-link:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="grid-background"></div>
+
+    <div class="main-container">
+        <div class="login-card">
+            <h1>Heureux de vous revoir !</h1>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <form id="loginForm">
+                <div class="input-container">
+                    <span class="icon"><i class="fas fa-user"></i></span>
+                    <input type="text" id="username" placeholder="Nom d'utilisateur, email ou téléphone" required>
+                </div>
+
+                <div class="input-container">
+                    <span class="icon"><i class="fas fa-lock"></i></span>
+                    <input type="password" id="password" placeholder="Mot de passe" required>
+                </div>
+
+                <button type="submit" class="btn-connect">Se connecter</button>
+            </form>
+
+            <a href="/frame3" class="register-link">Pas encore de compte ? S'inscrire</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').onsubmit = async function(e) {
+            e.preventDefault();
+            
+            const errorMessage = document.getElementById('errorMessage');
+            const btn = document.querySelector('.btn-connect');
+            
+            const formData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = result.redirect;
+                } else {
+                    errorMessage.textContent = result.message;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = "Erreur lors de la connexion";
+                errorMessage.style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>

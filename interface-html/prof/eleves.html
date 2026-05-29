@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Liste Élèves & Menu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-paper: #f0ede5;
+            --card-blue: #1d3557;
+            --accent-orange: #f39200;
+            --nav-blue: #142d63;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-paper);
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 35px 35px;
+            font-family: 'Roboto Condensed', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 100px;
+        }
+
+        /* --- HEADER --- */
+        .header-nav {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .btn-back {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            border: 2px solid #000;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.5rem; font-weight: bold;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.1);
+        }
+
+        h1 { flex-grow: 1; text-align: center; font-family: 'Anton', sans-serif; text-transform: uppercase; }
+
+        /* --- CARTES ÉLÈVES --- */
+        .student-list { width: 100%; max-width: 420px; padding: 0 15px; }
+
+        .student-card {
+            background-color: var(--card-blue);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            color: white;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column;
+            height: 150px;
+        }
+
+        .student-top { display: flex; align-items: center; margin-bottom: 15px; }
+        .avatar-circle { width: 65px; height: 65px; background: var(--accent-orange); border-radius: 50%; margin-right: 15px; }
+        .student-name h2 { font-family: 'Anton', sans-serif; font-size: 1.4rem; line-height: 1; }
+        .student-name p { font-size: 0.8rem; opacity: 0.8; }
+
+        .student-stats {
+            display: flex; justify-content: space-between;
+            padding-right: 100px;
+            text-align: center;
+        }
+        .stat div { font-weight: bold; font-size: 0.9rem; }
+        .stat label { font-size: 0.65rem; opacity: 0.7; display: block; }
+
+        .rank-badge {
+            position: absolute; right: 0; top: 0; bottom: 0;
+            width: 90px; background: var(--accent-orange);
+            border-radius: 100px 0 0 100px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: black;
+        }
+        .rank-badge span { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; }
+        .rank-number { font-family: 'Anton', sans-serif; font-size: 2.8rem; line-height: 1; }
+
+        /* --- BARRE DE NAVIGATION INCURVÉE --- */
+        .bottom-nav-container {
+            position: fixed; bottom: 0; width: 100%; max-width: 450px;
+            height: 80px; display: flex; justify-content: center;
+        }
+
+        .nav-background {
+            background: var(--nav-blue);
+            width: 90%; height: 60px;
+            align-self: flex-end;
+            border-radius: 30px 30px 0 0;
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .nav-center-cutout {
+            position: absolute; top: -35px;
+            width: 85px; height: 85px;
+            background: var(--bg-paper);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .btn-plus-main {
+            width: 70px; height: 70px;
+            background: var(--nav-blue);
+            border: 4px solid var(--bg-paper);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 2.5rem;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .btn-plus-main::after {
+            content: 'quiz'; position: absolute; bottom: -22px;
+            color: white; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;
+        }
+
+        .nav-item { color: white; text-align: center; cursor: pointer; text-decoration: none; }
+        .nav-item i { display: block; font-size: 1.2rem; margin-bottom: 2px; }
+        .nav-item span { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-nav">
+        <div class="btn-back" onclick="window.location.href='/dashboard'"> ← </div>
+        <h1>LES ELEVES</h1>
+    </div>
+
+    <div class="student-list">
+        {% if students and students|length > 0 %}
+            {% for student in students %}
+            <div class="student-card">
+                <div class="student-top">
+                    <div class="avatar-circle"></div>
+                    <div class="student-name">
+                        <h2>{{ student.prenom }} {{ student.nom }}</h2>
+                        <p>{{ student.niveau|upper }}</p>
+                    </div>
+                </div>
+                <div class="student-stats">
+                    <div class="stat"><div>{{ student.missions_done }}</div><label>Missions effectuées</label></div>
+                    <div class="stat"><div>{{ student.progress }}%</div><label>Progression</label></div>
+                    <div class="stat"><div>0</div><label>Ranking</label></div>
+                </div>
+                <div class="rank-badge">
+                    <span>classement</span>
+                    <div class="rank-number">{{ loop.index }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="student-card">
+                <div class="student-top">
+                    <div class="avatar-circle"></div>
+                    <div class="student-name">
+                        <h2>AUCUN ELEVES</h2>
+                        <p>Aucun élève inscrit</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% include 'prof/bottom_nav.html' %}
+
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-paper: #f0ede5;
+            --dark-blue: #1a237e;
+            --accent-orange: #ff9800;
+            --text-white: #ffffff;
+            --shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-paper);
+            /* Arrière-plan quadrillé */
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            font-family: 'Roboto Condensed', sans-serif;
+            color: #333;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            background: black;
+            border-radius: 40px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            background: #444;
+            overflow: hidden;
+        }
+
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .user-text h3 { font-size: 0.8rem; font-weight: normal; opacity: 0.8; }
+        .user-text p { font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        .user-text span { font-size: 0.8rem; color: #aaa; }
+
+        .header-icons { display: flex; gap: 15px; font-size: 1.2rem; }
+
+        /* --- TITRES DE SECTION --- */
+        h2 {
+            font-family: 'Anton', sans-serif;
+            font-size: 1.8rem;
+            margin: 10px 0;
+            letter-spacing: 1px;
+        }
+
+        /* --- GRID STATISTIQUES --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .stat-card {
+            background: var(--dark-blue);
+            color: white;
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-card h4 { font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-card .value { font-size: 1.2rem; font-weight: bold; }
+        .stat-card img { width: 40px; margin: 0 auto; display: block; }
+
+        /* --- SECTION CENTRALE (Podium & Graphique) --- */
+        .middle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .orange-card {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            border-radius: 20px;
+            padding: 15px;
+            color: white;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .podium-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #eee;
+            margin: 10px auto;
+            border: 4px solid rgba(255,255,255,0.3);
+        }
+
+        /* --- BOUTONS D'ACTION --- */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-action {
+            border-radius: 15px;
+            padding: 20px 10px;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            border: 2px solid white;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-orange { background: var(--accent-orange); }
+        .btn-blue { background: var(--dark-blue); }
+        .btn-full { grid-column: span 2; padding: 15px; }
+
+        .btn-action:active { transform: scale(0.95); }
+
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <div class="header">
+            <div class="user-info">
+                <div class="avatar">
+                    <img src="https://via.placeholder.com/50" alt="User">
+                </div>
+                <div class="user-text">
+                    <h3>Heureux de vous revoir !</h3>
+                    <p>ABDELLATIF AKESKOUS</p>
+                    <span>admin</span>
+                </div>
+            </div>
+            <div class="header-icons">
+                <span>🔍</span>
+                <span>🔔</span>
+            </div>
+        </div>
+
+        <h2>Statistique</h2>
+        <div class="stats-grid">
+            <div class="stat-card" onclick="window.location.href='/prof/mes_classes'">
+                <h4>Total des classes</h4>
+                <div class="value">2</div>
+                <img src="https://cdn-icons-png.flaticon.com/512/3429/3429433.png" alt="icon">
+            </div>
+            <div class="stat-card" onclick="window.location.href='/prof/missions'">
+                <h4>Les missions actives</h4>
+                <div class="value">{{ active_missions }}</div>
+                <img src="https://cdn-icons-png.flaticon.com/512/2645/2645853.png" alt="icon">
+            </div>
+            <div class="stat-card" onclick="window.location.href='/prof/eleves'">
+                <h4>Total des élèves</h4>
+                <div class="value">{{ total_students }}</div>
+                <img src="https://cdn-icons-png.flaticon.com/512/3429/3429402.png" alt="icon">
+            </div>
+        </div>
+
+        <div class="middle-grid">
+            <div class="orange-card">
+                <p style="font-size: 0.8rem;">ABDELATIF AKESKOUS</p>
+                <p>4AEP</p>
+                <p><strong>1896 XP</strong></p>
+                <div class="podium-img"></div>
+                <p>🏆 1er</p>
+            </div>
+            <div class="orange-card" style="display:flex; align-items:center; justify-content:center;">
+                <p style="font-size: 0.7rem;">Graphique de Mission</p>
+                </div>
+        </div>
+
+        <h2>Lancer une mission</h2>
+        <div class="action-grid">
+            <div class="btn-action btn-orange" onclick="window.location.href='/prof/creer_mission'">
+                Créer une nouvelle mission
+            </div>
+            <div class="btn-action btn-blue" onclick="window.location.href='/prof/creer_mission'">
+                Créer une nouvelle mission
+            </div>
+            <div class="btn-action btn-blue btn-full" onclick="handleAction('Explorer')">
+                🚀 Explorez les missions prêtes à l'emploi
+            </div>
+        </div>
+
+    </div>
+
+    {% include 'prof/bottom_nav.html' %}
+
+    <script>
+        // Logique JavaScript simple pour les interactions
+        function handleAction(name) {
+            console.log("Action déclenchée : " + name);
+            alert("Vous avez cliqué sur : " + name);
+        }
+
+        // Animation au chargement
+        window.onload = () => {
+            console.log("Interface QAMAR chargée");
+        };
+    </script>
+</body>
+</html>

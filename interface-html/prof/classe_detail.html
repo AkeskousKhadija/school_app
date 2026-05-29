@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Classe 4AEP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-paper: #f0ede5;
+            --card-blue: #1a237e;
+            --accent-orange: #f39200;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-paper);
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 35px 35px;
+            font-family: 'Roboto Condensed', sans-serif;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-nav {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .btn-back {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #000;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 3px 0px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            flex-grow: 1;
+            text-align: center;
+            font-family: 'Anton', sans-serif;
+            font-size: 1.6rem;
+            text-transform: uppercase;
+        }
+
+        .student-list {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .student-card {
+            background-color: var(--card-blue);
+            border-radius: 20px;
+            height: 140px;
+            display: flex;
+            position: relative;
+            color: white;
+            padding: 15px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .student-avatar {
+            width: 70px;
+            height: 70px;
+            background-color: var(--accent-orange);
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .student-info h2 {
+            font-family: 'Anton', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+        }
+
+        .student-info p {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .student-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            width: 100%;
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            padding: 0 15px;
+            text-align: center;
+        }
+
+        .stat-item span {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .stat-label { font-size: 0.65rem !important; opacity: 0.7; font-weight: normal !important; }
+
+        .ranking-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 90px;
+            background-color: var(--accent-orange);
+            border-radius: 80px 0 0 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: black;
+        }
+
+        .ranking-badge span { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .ranking-badge .rank-number { font-family: 'Anton', sans-serif; font-size: 2.5rem; line-height: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="header-nav">
+        <div class="btn-back" onclick="window.history.back()"> < </div>
+        <h1>CLASSE 4AEP</h1>
+    </div>
+
+    <div class="student-list">
+        
+        <div class="student-card">
+            <div class="student-avatar"></div>
+            <div class="student-info">
+                <h2>NOM PRENOM</h2>
+                <p>CLASSE 4AEP</p>
+            </div>
+            
+            <div class="student-stats">
+                <div class="stat-item"><span>25</span><span class="stat-label">Missions effectuées</span></div>
+                <div class="stat-item"><span>80%</span><span class="stat-label">Progression</span></div>
+                <div class="stat-item"><span>2560</span><span class="stat-label">Ranking</span></div>
+            </div>
+
+            <div class="ranking-badge">
+                <span>classement</span>
+                <div class="rank-number">1</div>
+            </div>
+        </div>
+
+        <div class="student-card">
+            <div class="student-avatar"></div>
+            <div class="student-info">
+                <h2>NOM PRENOM</h2>
+                <p>CLASSE 4AEP</p>
+            </div>
+            
+            <div class="student-stats">
+                <div class="stat-item"><span>25</span><span class="stat-label">Missions effectuées</span></div>
+                <div class="stat-item"><span>80%</span><span class="stat-label">Progression</span></div>
+                <div class="stat-item"><span>2560</span><span class="stat-label">Ranking</span></div>
+            </div>
+
+            <div class="ranking-badge">
+                <span>classement</span>
+                <div class="rank-number">2</div>
+            </div>
+        </div>
+
+        <div class="student-card">
+            <div class="student-avatar"></div>
+            <div class="student-info">
+                <h2>NOM PRENOM</h2>
+                <p>CLASSE 4AEP</p>
+            </div>
+            
+            <div class="student-stats">
+                <div class="stat-item"><span>25</span><span class="stat-label">Missions effectuées</span></div>
+                <div class="stat-item"><span>80%</span><span class="stat-label">Progression</span></div>
+                <div class="stat-item"><span>2560</span><span class="stat-label">Ranking</span></div>
+            </div>
+
+            <div class="ranking-badge">
+                <span>classement</span>
+                <div class="rank-number">3</div>
+            </div>
+        </div>
+
+    </div>
+
+    {% include 'prof/bottom_nav.html' %}
+
+</body>
+</html>

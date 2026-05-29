@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAMAR - Missions Prêtes à l'emploi</title>
+    <style>
+        /* Reset et base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* En-tête fixe */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-shrink: 0;
+        }
+
+        .back-button {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #000;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            text-transform: none; /* Respect de la casse de l'image */
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        /* Zone de liste défilante */
+        .mission-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Masquer la barre de défilement pour un look plus "App" */
+        .mission-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .mission-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+
+        /* Style des items de mission */
+        .mission-item {
+            background-color: #3d3d3d; /* Gris anthracite */
+            border-radius: 12px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .mission-item:active {
+            transform: scale(0.98);
+        }
+
+        .mission-info h2 {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+            font-weight: normal;
+        }
+
+        .mission-info p {
+            font-family: Arial, sans-serif;
+            font-size: 0.85rem;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+
+        /* Icônes de droite */
+        .mission-icons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 1.4rem;
+            opacity: 0.6;
+        }
+
+        .icon {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .icon:hover {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="/prof/dashboard" class="back-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </a>
+        <h1>Explorez les missions prêtes à l'emploi</h1>
+    </div>
+
+    <div class="mission-container">
+        
+        <div class="mission-item" onclick="selectMission('Mathématiques', 'Scientifique')">
+            <div class="mission-info">
+                <h2>Mathématiques</h2>
+                <p>Scientifique</p>
+            </div>
+            <div class="mission-icons">
+                <span class="icon" onclick="event.stopPropagation(); addMission()">+</span>
+                <span class="icon" onclick="event.stopPropagation(); editMission()">✏️</span>
+            </div>
+        </div>
+
+        <div class="mission-item" onclick="selectMission('Sciences', 'Scientifique')">
+            <div class="mission-info">
+                <h2>Sciences</h2>
+                <p>Scientifique</p>
+            </div>
+            <div class="mission-icons">
+                <span class="icon" onclick="event.stopPropagation(); addMission()">+</span>
+                <span class="icon" onclick="event.stopPropagation(); editMission()">✏️</span>
+            </div>
+        </div>
+
+        <div class="mission-item" onclick="selectMission('Géographie', 'Sciences Humaines')">
+            <div class="mission-info">
+                <h2>Géographie</h2>
+                <p>Sciences Humaines</p>
+            </div>
+            <div class="mission-icons">
+                <span class="icon" onclick="event.stopPropagation(); addMission()">+</span>
+                <span class="icon" onclick="event.stopPropagation(); editMission()">✏️</span>
+            </div>
+        </div>
+
+        <div class="mission-item" onclick="selectMission('Histoire', 'Sciences Humaines')">
+            <div class="mission-info">
+                <h2>Histoire</h2>
+                <p>Sciences Humaines</p>
+            </div>
+            <div class="mission-icons">
+                <span class="icon" onclick="event.stopPropagation(); addMission()">+</span>
+                <span class="icon" onclick="event.stopPropagation(); editMission()">✏️</span>
+            </div>
+        </div>
+
+        <div class="mission-item" onclick="selectMission('Français', 'Langues')">
+            <div class="mission-info">
+                <h2>Français</h2>
+                <p>Langues</p>
+            </div>
+            <div class="mission-icons">
+                <span class="icon" onclick="event.stopPropagation(); addMission()">+</span>
+                <span class="icon" onclick="event.stopPropagation(); editMission()">✏️</span>
+            </div>
+        </div>
+
+        <div class="mission-item" onclick="selectMission('Anglais', 'Langues')">
+            <div class="mission-info">
+                <h2>Anglais</h2>
+                <p>Langues</p>
+            </div>
+            <div class="mission-icons">
+                <span class="icon" onclick="event.stopPropagation(); addMission()">+</span>
+                <span class="icon" onclick="event.stopPropagation(); editMission()">✏️</span>
+            </div>
+        </div>
+
+        <div class="mission-item" onclick="selectMission('Logique', 'Cognitif')">
+            <div class="mission-info">
+                <h2>Jeux de Logique</h2>
+                <p>Cognitif</p>
+            </div>
+            <div class="mission-icons">
+                <span class="icon" onclick="event.stopPropagation(); addMission()">+</span>
+                <span class="icon" onclick="event.stopPropagation(); editMission()">✏️</span>
+            </div>
+        </div>
+
+        <div class="mission-item" onclick="selectMission('Mémoire', 'Cognitif')">
+            <div class="mission-info">
+                <h2>Jeux de Mémoire</h2>
+                <p>Cognitif</p>
+            </div>
+            <div class="mission-icons">
+                <span class="icon" onclick="event.stopPropagation(); addMission()">+</span>
+                <span class="icon" onclick="event.stopPropagation(); editMission()">✏️</span>
+            </div>
+        </div>
+
+    </div>
+
+    {% include 'prof/bottom_nav.html' %}
+
+    <script>
+        function selectMission(title, category) {
+            alert("Mission sélectionnée: " + title + " (" + category + ")");
+        }
+
+        function addMission() {
+            alert("Ajouter la mission - Bientôt disponible!");
+        }
+
+        function editMission() {
+            alert("Modifier la mission - Bientôt disponible!");
+        }
+    </script>
+
+</body>
+</html>

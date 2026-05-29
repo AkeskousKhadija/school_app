@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Splash Screen</title>
+    <style>
+        :root {
+            --bg-color: #f4e9d5; /* Couleur beige papier */
+            --grid-color: rgba(180, 180, 180, 0.3);
+            --ink-color: #8b5a2b; /* Couleur marron des formules */
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Effet de papier quadrillé */
+        .grid-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/img/background.svg');
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Zone de l'illustration (Simulation avec l'image ou une icône) */
+        .illustration {
+            width: 80%;
+            margin: 0 auto;
+            position: relative;
+            /* Si vous avez l'image, remplacez par une balise img */
+            /* Ici, j'utilise un placeholder pour symboliser le groupe d'objets */
+        }
+
+        .illustration img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+        }
+
+        /* Animation du Loader en bas */
+        .loader-container {
+            margin-top: 100px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Simulation des formules mathématiques flottantes */
+        .formula {
+            position: absolute;
+            color: var(--ink-color);
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            opacity: 0.7;
+            user-select: none;
+        }
+
+        /* Animation de fondu pour le redirect */
+        .fade-out {
+            animation: fadeOut 0.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="grid-background"></div>
+
+    <div class="container">
+        <div class="illustration">
+            <img src="/img/img1.svg" alt="Math Illustration">
+            
+            <div class="formula" style="top: -40px; left: 10%; font-size: 1.2rem;">$$\frac{-b \pm \sqrt{b^2-4ac}}{2a}$$</div>
+            <div class="formula" style="top: 20px; right: 5%; font-size: 0.9rem;">sin(x)</div>
+            <div class="formula" style="bottom: -20px; left: 20%; font-size: 1.5rem;">&pi;</div>
+        </div>
+
+        <div class="loader-container">
+            <div class="loader"></div>
+        </div>
+    </div>
+
+    <script>
+        // Redirect vers la page de connexion après 3 secondes
+        window.addEventListener('load', () => {
+            console.log("Le splash screen est prêt.");
+            
+            // Attendre 3 secondes puis rediriger
+            setTimeout(() => {
+                // Ajouter l'animation de fondu
+                document.body.classList.add('fade-out');
+                
+                // Rediriger vers frame2 après l'animation
+                setTimeout(() => {
+                    window.location.href = '/frame2';
+                }, 500);
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
