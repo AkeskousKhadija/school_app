@@ -29,7 +29,7 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('img/bg.png'),
+                image: AssetImage('lib/assets/images/bg.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -105,7 +105,7 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
                 ),
                 child: const CircleAvatar(
                   radius: 16,
-                  backgroundImage: AssetImage('img/icon.png'), // Mini-avatar en haut à droite
+                  backgroundImage: AssetImage('lib/assets/images/icon.png'), // Mini-avatar en haut à droite
                 ),
               ),
             ],
@@ -123,7 +123,7 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Image.asset(
-            'img/icon.png',
+            'lib/assets/images/icon.png',
             height: 120,
             fit: BoxFit.contain,
           ),
