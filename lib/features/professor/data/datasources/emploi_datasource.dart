@@ -28,13 +28,12 @@ class EmploiDatasource {
   Future<Map<String, dynamic>> createEmploi({
     required int idCours,
     required int idJour,
-    required int idHoraire,
     required int idSeance,
   }) async {
     final response = await client.from('emploi_du_temps').insert({
       'id_cours': idCours,
       'id_jour': idJour,
-      'id_horaire': idHoraire,
+      // 'id_horaire' removed per new schema
       'id_seance': idSeance,
     }).select();
     return response.first;

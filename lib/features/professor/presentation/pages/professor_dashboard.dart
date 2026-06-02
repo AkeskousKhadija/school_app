@@ -141,9 +141,17 @@ class _ProfessorDashboardState extends ConsumerState<ProfessorDashboard> {
                   const SizedBox(height: 20),
 
                   ElevatedButton.icon(
-                    onPressed: () => context.go('/prof/emploi/create'),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Créer un Emploi'),
+                    onPressed: () => context.go('/prof/emploi/list'),
+                    icon: const Icon(Icons.list),
+                    label: const Text('Liste des Emplois'),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  ElevatedButton.icon(
+                    onPressed: () => context.go('/prof/emploi'),
+                    icon: const Icon(Icons.edit_calendar),
+                    label: const Text('Mon Emploi du Temps'),
                   ),
 
                   const SizedBox(height: 20),

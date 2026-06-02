@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:school_app/core/supabase/supabase_client.dart';
+import 'package:school_app/features/professor/data/datasources/emploi_datasource.dart';
+import 'package:school_app/features/professor/data/repositories/emploi_repository.dart';
 
 class EmploiDuTempsPage extends StatefulWidget {
   const EmploiDuTempsPage({super.key});
@@ -8,24 +12,115 @@ class EmploiDuTempsPage extends StatefulWidget {
 }
 
 class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
-  // État de sélection pour les 6 niveaux (tous sélectionnés par défaut comme sur l'image)
-  final List<bool> _selectedLevels = List.generate(6, (index) => true);
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<int> _niveauIds = [];
+  List<String> _levelLabels = [];
+  List<bool> _selectedLevels = [];
+  List<Map<String, dynamic>> _matieresList = [];
+  List<List<bool>> _matiereSelections = [];
 
-  final List<String> _levelLabels = [
-    '1ère année',
-    '2ème année',
-    '3ème année',
-    '4ème année',
-    '5ème année',
-    '6ème année',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadNiveaux();
+  }
+
+void _loadNiveaux() async {
+    try {
+      final client = SupabaseClientProvider.client;
+      final repository = EmploiRepository(EmploiDatasource(client));
+
+      // Fetch levels
+      final niveaux = await repository.fetchNiveaux();
+      debugPrint('Niveaux récupérés : $niveaux');
+
+      // Fetch matiere data (for selection UI)
+      debugPrint('Starting matiere fetch...');
+      try {
+        final response = await client
+            .from('matiere')
+            .select('id_matiere, nom')
+            .order('nom')
+            .limit(100);
+
+        debugPrint('Raw response: $response');
+        debugPrint('Response type: ${response.runtimeType}');
+
+        if (response == null || (response as List).isEmpty) {
+          debugPrint('Empty matiere response!');
+          _matieresList = [];
+        } else {
+          _matieresList = (response as List).cast<Map<String, dynamic>>().toList();
+        }
+      } catch (e) {
+        debugPrint('Matiere fetch error: $e');
+        _matieresList = [];
+      }
+
+      // Extract level names and IDs
+      _levelLabels = niveaux.map((n) => n['nom']?.toString() ?? '').toList();
+      _niveauIds = niveaux.map((n) => n['id_niveau'] as int).toList();
+
+      // Initialize selection arrays
+      _selectedLevels = List.filled(_levelLabels.length, false);
+      _matiereSelections = List.generate(
+        _levelLabels.length,
+        (_) => List.filled(_matieresList.length, false),
+      );
+
+      // Check for existing emploi to modify (after initialization)
+      try {
+        final existing = await repository.getExistingEmploi();
+        if (existing != null && existing.isNotEmpty) {
+          for (var emploi in existing) {
+            final idNiveau = emploi['id_niveau'] as int?;
+            final idMatiere = emploi['id_matiere'] as int?;
+            if (idNiveau != null && idMatiere != null) {
+              final niveauIndex = _niveauIds.indexOf(idNiveau);
+              final matiereIndex = _matieresList.indexWhere((m) => m['id_matiere'] == idMatiere);
+              if (niveauIndex >= 0 && matiereIndex >= 0) {
+                _selectedLevels[niveauIndex] = true;
+                _matiereSelections[niveauIndex][matiereIndex] = true;
+              }
+            }
+          }
+          debugPrint('Existing emploi loaded for modification: ${existing.length} items');
+        }
+      } catch (e) {
+        debugPrint('No existing emploi found or error loading: $e');
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Erreur lors du chargement: $e');
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Impossible de charger les données depuis la base de données.';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_errorMessage != null) {
+      return Scaffold(
+        body: Center(child: Text(_errorMessage!)),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         children: [
-          // 1. Image de fond avec filtre d'assombrissement
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -37,8 +132,6 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
           Container(
             color: Colors.black.withOpacity(0.5),
           ),
-
-          // 2. Contenu de la page
           SafeArea(
             child: Column(
               children: [
@@ -60,7 +153,6 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
     );
   }
 
-  // --- Barre supérieure (Header) ---
   Widget _buildTopBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -68,7 +160,7 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            'QAMAR',
+            'Ghizlane',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -105,7 +197,7 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
                 ),
                 child: const CircleAvatar(
                   radius: 16,
-                  backgroundImage: AssetImage('lib/assets/images/icon.png'), // Mini-avatar en haut à droite
+                  backgroundImage: AssetImage('lib/assets/images/icon.png'),
                 ),
               ),
             ],
@@ -115,7 +207,6 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
     );
   }
 
-  // --- Section Titre avec l'Avatar Enseignant ---
   Widget _buildMainTitleSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 48.0),
@@ -134,8 +225,8 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFFFBB000), // Jaune/Orange vif de l'interface
-                fontFamily: 'Impact', // Optionnel : à remplacer par votre police personnalisée compacte
+                color: Color(0xFFFBB000),
+                fontFamily: 'Impact',
                 shadows: [
                   Shadow(
                     offset: Offset(2, 2),
@@ -151,32 +242,34 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
     );
   }
 
-  // --- Grille de cartes (3 Colonnes x 2 Lignes) ---
   Widget _buildGridOfLevels() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40.0),
       child: GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: 6,
+        itemCount: _levelLabels.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           crossAxisSpacing: 24,
           mainAxisSpacing: 20,
-          childAspectRatio: 2.3, // Gère le ratio rectangulaire exact des cartes
+          childAspectRatio: 1.8,
         ),
         itemBuilder: (context, index) {
           final isSelected = _selectedLevels[index];
           return GestureDetector(
             onTap: () {
               setState(() {
-                _selectedLevels[index] = !_selectedLevels[index];
+                _selectedLevels[index] = !isSelected;
               });
             },
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected ? const Color(0xFFFBB000) : Colors.black45,
                 borderRadius: BorderRadius.circular(12),
-                border: isSelected ? null : Border.all(color: Colors.white.withOpacity(0.30), width: 1.5),
+                border: isSelected ? null : Border.all(
+                  color: Colors.white.withOpacity(0.30),
+                  width: 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.3),
@@ -195,7 +288,6 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Index du niveau en haut à gauche
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
@@ -212,29 +304,41 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          // Indicateurs de Langues (Français / Arabe)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLanguageRow('Français', isSelected),
-                              const SizedBox(height: 4),
-                              _buildLanguageRow('Arab', isSelected),
-                            ],
-                          )
+                          Expanded(
+                            child: Text(
+                              _levelLabels[index],
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? Colors.black87 : Colors.white,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      // Intitulé du niveau (ex: 1ère année)
-                      Text(
-                        _levelLabels[index],
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.black87 : Colors.white,
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: List.generate(
+                          _matieresList.length,
+                          (matiereIndex) {
+                            final matiere = _matieresList[matiereIndex];
+                            final isMatiereSelected = _matiereSelections[index][matiereIndex];
+                            return _buildMatiereChip(
+                              matiere['nom'] as String,
+                              isSelected,
+                              isMatiereSelected,
+                              () {
+                                setState(() {
+                                  _matiereSelections[index][matiereIndex] = !isMatiereSelected;
+                                });
+                              },
+                            );
+                          },
                         ),
                       ),
                     ],
                   ),
-                  // Checkmark blanc en haut à droite
                   if (isSelected)
                     const Positioned(
                       top: 0,
@@ -254,31 +358,85 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
     );
   }
 
-  Widget _buildLanguageRow(String language, bool isCardSelected) {
-    return Row(
-      children: [
-        Icon(
-          Icons.check_circle_rounded,
-          size: 15,
-          color: isCardSelected ? Colors.black87 : Colors.white60,
-        ),
-        const SizedBox(width: 6),
-        Text(
-          language,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: isCardSelected ? Colors.black87 : Colors.white,
+  Widget _buildMatiereChip(
+      String label,
+      bool cardSelected,
+      bool isSelected,
+      VoidCallback onTap,
+      ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (cardSelected ? Colors.white : const Color(0xFFFBB000))
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : (cardSelected ? Colors.black54 : Colors.white54),
           ),
         ),
-      ],
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isSelected)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Icon(
+                  Icons.check,
+                  size: 14,
+                  color: cardSelected ? const Color(0xFFFBB000) : Colors.black,
+                ),
+              ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isSelected
+                    ? (cardSelected ? const Color(0xFFFBB000) : Colors.black)
+                    : (cardSelected ? Colors.black87 : Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  // --- Bouton Continuer ---
   Widget _buildContinueButton() {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () {
+        final jobs = <Map<String, dynamic>>[];
+        for (int i = 0; i < _levelLabels.length; i++) {
+          if (_selectedLevels[i]) {
+            final niveau = _levelLabels[i];
+            final idNiveau = _niveauIds[i];
+            for (int j = 0; j < _matieresList.length; j++) {
+              if (_matiereSelections[i][j]) {
+                final matiere = _matieresList[j];
+                jobs.add({
+                  'niveau': niveau,
+                  'matiere': matiere['nom'],
+                  'id_niveau': idNiveau,
+                  'id_matiere': matiere['id_matiere'],
+                });
+              }
+            }
+          }
+        }
+        if (jobs.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Veuillez sélectionner au moins un niveau et une matière')),
+          );
+          return;
+        }
+        GoRouter.of(context).push('/prof/emploi/create', extra: jobs);
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFFFBB000),
         minimumSize: const Size(200, 48),
@@ -298,19 +456,18 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
     );
   }
 
-  // --- Barre de Navigation Flottante Blanche/Gris Clair ---
   Widget _buildBottomNavigationBar() {
     return Container(
       width: 420,
       height: 56,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
-        borderRadius: BorderRadius.circular(28),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF0F0F0),
+        borderRadius: BorderRadius.all(Radius.circular(28)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black26,
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           )
         ],
       ),

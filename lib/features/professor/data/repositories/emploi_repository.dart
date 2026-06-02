@@ -42,8 +42,7 @@ class EmploiRepository {
     final jours = await datasource.getJours();
     final idJour = jours.firstWhere((j) => j['nom'] == jour)['id_jour'] as int;
 
-    final horaires = await datasource.getHoraires();
-    final idHoraire = horaires.firstWhere((h) => h['heure_debut'] == heureDebut)['id_horaire'] as int;
+    // id_horaire removed per new schema
 
     final seanceResponse = await datasource.client
         .from('seance')
@@ -53,7 +52,7 @@ class EmploiRepository {
     await datasource.createEmploi(
       idCours: idCours,
       idJour: idJour,
-      idHoraire: idHoraire,
+      // idHoraire removed
       idSeance: idSeance,
     );
   }
@@ -67,6 +66,34 @@ class EmploiRepository {
         .select('*, emploi_du_temps(*), matiere(*)')
         .eq('id_niveau', idNiveau);
 
+    return List<Map<String, dynamic>>.from(response);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllEmploisWithDetails() async {
+    final response = await datasource.client
+        .from('cours')
+        .select('id_niveau, id_matiere, niveau(nom), matiere(nom)')
+        .limit(100);
+    
+    // Flatten the nested objects
+    final List<Map<String, dynamic>> result = [];
+    for (var item in response) {
+      result.add({
+        'id_niveau': item['id_niveau'],
+        'id_matiere': item['id_matiere'],
+        'niveau': item['niveau'] is Map ? item['niveau']['nom'] : item['niveau'],
+        'matiere': item['matiere'] is Map ? item['matiere']['nom'] : item['matiere'],
+      });
+    }
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getExistingEmploi() async {
+    final response = await datasource.client
+        .from('cours')
+        .select('id_niveau, id_matiere')
+        .limit(10);
+    
     return List<Map<String, dynamic>>.from(response);
   }
 }
