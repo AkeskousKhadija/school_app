@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:school_app/features/auth/presentation/viewmodels/auth_notifier.dart';
 import 'package:school_app/core/errors/failures.dart';
 import 'package:school_app/features/shared/domain/entities/user_role.dart';
+import 'package:school_app/core/theme/app_theme.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -110,6 +111,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < AppBreakpoints.tablet;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2EFEA),
@@ -123,8 +126,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           ),
           Center(
             child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 0),
               child: Container(
-                width: 400,
+                width: isMobile ? screenWidth - 32 : 400,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1A2E78),
@@ -137,18 +141,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   ],
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
+                    Text(
                       'Fais partie de QAMAR !',
-                      style: TextStyle(
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 15),
-
                     if (authState.hasError || error != null)
                       Container(
                         padding: const EdgeInsets.all(10),
@@ -162,7 +166,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           style: const TextStyle(color: Colors.redAccent),
                         ),
                       ),
-
                     // Toggle Role
                     Container(
                       decoration: BoxDecoration(
@@ -200,21 +203,21 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 15),
-
                     // Nom + Prenom
-                    Row(
-                      children: [
-                        Expanded(child: _input('Nom', nomController)),
-                        const SizedBox(width: 10),
-                        Expanded(child: _input('Prénom', prenomController)),
-                      ],
-                    ),
-
+                    if (isMobile) ...[
+                      _input('Nom', nomController),
+                      _input('Prénom', prenomController),
+                    ] else
+                      Row(
+                        children: [
+                          Expanded(child: _input('Nom', nomController)),
+                          const SizedBox(width: 10),
+                          Expanded(child: _input('Prénom', prenomController)),
+                        ],
+                      ),
                     _input('Email', _emailController),
                     _input('Téléphone', _phoneController),
-
                     if (role == 'student')
                       Container(
                         margin: const EdgeInsets.only(bottom: 10),
@@ -237,27 +240,20 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           ),
                         ),
                       ),
-
                     _input('Mot de passe', _passwordController, obscure: true),
                     _input('Confirmer mot de passe', _confirmPasswordController, obscure: true),
-
                     const SizedBox(height: 10),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: loading || authState.isLoading ? null : register,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3A98C7),
-                          padding: const EdgeInsets.all(14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                        ),
-                        child: (loading || authState.isLoading)
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text("S'inscrire", style: TextStyle(fontSize: 18)),
+                    ElevatedButton(
+                      onPressed: loading || authState.isLoading ? null : register,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3A98C7),
+                        padding: const EdgeInsets.all(14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                       ),
+                      child: (loading || authState.isLoading)
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text("S'inscrire", style: TextStyle(fontSize: 18)),
                     ),
-
                     TextButton(
                       onPressed: () => context.pop(),
                       child: const Text('← Retour', style: TextStyle(color: Colors.white)),

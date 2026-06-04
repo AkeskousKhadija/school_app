@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:school_app/core/supabase/supabase_client.dart';
+import 'package:school_app/core/theme/app_theme.dart';
 import 'package:school_app/features/professor/data/datasources/emploi_datasource.dart';
-import 'package:school_app/features/professor/data/repositories/emploi_repository.dart';
 
 class EmploiDuTempsPage extends StatefulWidget {
   const EmploiDuTempsPage({super.key});
@@ -17,8 +17,7 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
   List<int> _niveauIds = [];
   List<String> _levelLabels = [];
   List<bool> _selectedLevels = [];
-  List<Map<String, dynamic>> _matieresList = [];
-  List<List<bool>> _matiereSelections = [];
+  List<String?> _selectedMatiereParNiveau = [];
 
   @override
   void initState() {
@@ -26,69 +25,47 @@ class _EmploiDuTempsPageState extends State<EmploiDuTempsPage> {
     _loadNiveaux();
   }
 
-void _loadNiveaux() async {
+  void _loadNiveaux() async {
     try {
       final client = SupabaseClientProvider.client;
-      final repository = EmploiRepository(EmploiDatasource(client));
-
-      // Fetch levels
-      final niveaux = await repository.fetchNiveaux();
-      debugPrint('Niveaux récupérés : $niveaux');
-
-      // Fetch matiere data (for selection UI)
-      debugPrint('Starting matiere fetch...');
-      try {
-        final response = await client
-            .from('matiere')
-            .select('id_matiere, nom')
-            .order('nom')
-            .limit(100);
-
-        debugPrint('Raw response: $response');
-        debugPrint('Response type: ${response.runtimeType}');
-
-        if (response == null || (response as List).isEmpty) {
-          debugPrint('Empty matiere response!');
-          _matieresList = [];
-        } else {
-          _matieresList = (response as List).cast<Map<String, dynamic>>().toList();
-        }
-      } catch (e) {
-        debugPrint('Matiere fetch error: $e');
-        _matieresList = [];
-      }
-
-      // Extract level names and IDs
-      _levelLabels = niveaux.map((n) => n['nom']?.toString() ?? '').toList();
-      _niveauIds = niveaux.map((n) => n['id_niveau'] as int).toList();
-
-      // Initialize selection arrays
+      final response = await client.from('niveau').select();
+      _levelLabels = (response as List).map((n) => n['nom']?.toString() ?? '').toList();
+      _niveauIds = (response).map((n) => n['id_niveau'] as int).toList();
       _selectedLevels = List.filled(_levelLabels.length, false);
-      _matiereSelections = List.generate(
-        _levelLabels.length,
-        (_) => List.filled(_matieresList.length, false),
-      );
+      _selectedMatiereParNiveau = List.filled(_levelLabels.length, null);
 
-      // Check for existing emploi to modify (after initialization)
+      // Charger les emplois existants pour pré-sélectionner
       try {
-        final existing = await repository.getExistingEmploi();
-        if (existing != null && existing.isNotEmpty) {
-          for (var emploi in existing) {
-            final idNiveau = emploi['id_niveau'] as int?;
-            final idMatiere = emploi['id_matiere'] as int?;
-            if (idNiveau != null && idMatiere != null) {
-              final niveauIndex = _niveauIds.indexOf(idNiveau);
-              final matiereIndex = _matieresList.indexWhere((m) => m['id_matiere'] == idMatiere);
-              if (niveauIndex >= 0 && matiereIndex >= 0) {
-                _selectedLevels[niveauIndex] = true;
-                _matiereSelections[niveauIndex][matiereIndex] = true;
-              }
-            }
+        final datasource = EmploiDatasource(client);
+        final existingEmplois = await datasource.getExistingEmplois();
+        
+        for (var emploi in existingEmplois) {
+          final seanceRaw = emploi['seance'];
+          if (seanceRaw == null) continue;
+          final List<dynamic> seanceList = seanceRaw is List ? seanceRaw : <dynamic>[seanceRaw];
+          if (seanceList.isEmpty) continue;
+          final Map<String, dynamic> seance = Map<String, dynamic>.from(seanceList.first);
+
+          final coursRaw = seance['cours'];
+          if (coursRaw == null) continue;
+          final List<dynamic> coursList = coursRaw is List ? coursRaw : <dynamic>[coursRaw];
+          if (coursList.isEmpty) continue;
+          final Map<String, dynamic> cours = Map<String, dynamic>.from(coursList.first);
+
+          final idNiveau = cours['id_niveau'] as int?;
+          final matiere = cours['matiere']?.toString();
+          if (idNiveau == null || matiere == null) continue;
+
+          final niveauIndex = _niveauIds.indexOf(idNiveau);
+          if (niveauIndex >= 0) {
+            _selectedLevels[niveauIndex] = true;
+            final current = _selectedMatiereParNiveau[niveauIndex] ?? '';
+            final newMatiere = '$current$matiere';
+            _selectedMatiereParNiveau[niveauIndex] = newMatiere.isEmpty ? null : newMatiere;
           }
-          debugPrint('Existing emploi loaded for modification: ${existing.length} items');
         }
       } catch (e) {
-        debugPrint('No existing emploi found or error loading: $e');
+        debugPrint('Erreur chargement emplois existants: $e');
       }
 
       if (!mounted) return;
@@ -96,7 +73,6 @@ void _loadNiveaux() async {
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Erreur lors du chargement: $e');
       if (!mounted) return;
       setState(() {
         _errorMessage = 'Impossible de charger les données depuis la base de données.';
@@ -107,6 +83,9 @@ void _loadNiveaux() async {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < AppBreakpoints.tablet;
+
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -129,21 +108,19 @@ void _loadNiveaux() async {
               ),
             ),
           ),
-          Container(
-            color: Colors.black.withOpacity(0.5),
-          ),
+          Container(color: Colors.black.withValues(alpha: 0.5)),
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 16),
-                _buildTopBar(),
+                _buildTopBar(isMobile),
                 const SizedBox(height: 20),
-                _buildMainTitleSection(),
+                _buildMainTitleSection(isMobile),
                 const SizedBox(height: 20),
-                Expanded(child: _buildGridOfLevels()),
+                Expanded(child: _buildGridOfLevels(isMobile)),
                 _buildContinueButton(),
                 const SizedBox(height: 20),
-                _buildBottomNavigationBar(),
+                _buildBottomNavigationBar(isMobile),
                 const SizedBox(height: 16),
               ],
             ),
@@ -153,30 +130,30 @@ void _loadNiveaux() async {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(bool isMobile) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             'Ghizlane',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: isMobile ? 18 : 24,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.5,
             ),
           ),
           Column(
             children: [
-              const Text(
+              Text(
                 'Étape 1 sur 3',
-                style: TextStyle(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: isMobile ? 12 : 14, color: Colors.white70, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 6),
               Container(
-                width: 65,
-                height: 3,
+                width: 50,
+                height: 2,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(2),
@@ -186,17 +163,17 @@ void _loadNiveaux() async {
           ),
           Row(
             children: [
-              const Icon(Icons.dark_mode_outlined, size: 22),
-              const SizedBox(width: 20),
-              const Icon(Icons.notifications_none_outlined, size: 24),
-              const SizedBox(width: 20),
+              const Icon(Icons.dark_mode_outlined, size: 20),
+              const SizedBox(width: 12),
+              const Icon(Icons.notifications_none_outlined, size: 22),
+              const SizedBox(width: 12),
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withOpacity(0.23), width: 1),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.23), width: 1),
                 ),
                 child: const CircleAvatar(
-                  radius: 16,
+                  radius: 14,
                   backgroundImage: AssetImage('lib/assets/images/icon.png'),
                 ),
               ),
@@ -207,33 +184,27 @@ void _loadNiveaux() async {
     );
   }
 
-  Widget _buildMainTitleSection() {
+  Widget _buildMainTitleSection(bool isMobile) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 48.0),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 48.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image.asset(
-            'lib/assets/images/icon.png',
-            height: 120,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(width: 24),
-          const Expanded(
+          if (!isMobile)
+            Image.asset(
+              'lib/assets/images/icon.png',
+              height: 100,
+              fit: BoxFit.contain,
+            ),
+          if (!isMobile) const SizedBox(width: 24),
+          Expanded(
             child: Text(
               'Quels niveaux enseignez-vous ?',
               style: TextStyle(
-                fontSize: 36,
+                fontSize: isMobile ? 18 : 36,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFFFBB000),
-                fontFamily: 'Impact',
-                shadows: [
-                  Shadow(
-                    offset: Offset(2, 2),
-                    blurRadius: 3.0,
-                    color: Colors.black,
-                  ),
-                ],
+                color: const Color(0xFFFBB000),
+                fontFamily: isMobile ? null : 'Impact',
               ),
             ),
           ),
@@ -242,20 +213,22 @@ void _loadNiveaux() async {
     );
   }
 
-  Widget _buildGridOfLevels() {
+  Widget _buildGridOfLevels(bool isMobile) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40.0),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 40.0),
       child: GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
         itemCount: _levelLabels.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 24,
-          mainAxisSpacing: 20,
-          childAspectRatio: 1.8,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: isMobile ? 2 : 3,
+          crossAxisSpacing: isMobile ? 12 : 24,
+          mainAxisSpacing: isMobile ? 12 : 20,
+          childAspectRatio: 2.75,
         ),
         itemBuilder: (context, index) {
           final isSelected = _selectedLevels[index];
+          final matieresSelectionnees = _selectedMatiereParNiveau[index] ?? '';
+
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -263,92 +236,129 @@ void _loadNiveaux() async {
               });
             },
             child: Container(
+              width: 368,
+              height: 160,
               decoration: BoxDecoration(
                 color: isSelected ? const Color(0xFFFBB000) : Colors.black45,
                 borderRadius: BorderRadius.circular(12),
                 border: isSelected ? null : Border.all(
-                  color: Colors.white.withOpacity(0.30),
+                  color: Colors.white.withValues(alpha: 0.30),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 6,
                     offset: const Offset(0, 4),
                   )
                 ],
               ),
-              padding: const EdgeInsets.all(16),
-              child: Stack(
+              padding: EdgeInsets.all(isMobile ? 8 : 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              '${index + 1}',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: isMobile ? 11 : 13,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              _levelLabels[index],
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.black87 : Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        children: List.generate(
-                          _matieresList.length,
-                          (matiereIndex) {
-                            final matiere = _matieresList[matiereIndex];
-                            final isMatiereSelected = _matiereSelections[index][matiereIndex];
-                            return _buildMatiereChip(
-                              matiere['nom'] as String,
-                              isSelected,
-                              isMatiereSelected,
-                              () {
-                                setState(() {
-                                  _matiereSelections[index][matiereIndex] = !isMatiereSelected;
-                                });
-                              },
-                            );
-                          },
+                      SizedBox(width: isMobile ? 6 : 12),
+                      Expanded(
+                        child: Text(
+                          _levelLabels[index],
+                          style: TextStyle(
+                            fontSize: isMobile ? 12 : 14,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.black87 : Colors.white,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
-                  if (isSelected)
-                    const Positioned(
-                      top: 0,
-                      right: 0,
-                      child: CircleAvatar(
-                        radius: 13,
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.check, size: 16, color: Color(0xFFFBB000)),
+                  if (isSelected) ...[
+                    Text(
+                      'Matières :',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: isMobile ? 11 : 12,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 4,
+                      children: [
+                        FilterChip(
+                          label: const Text('Arabe', style: TextStyle(fontSize: 10)),
+                          selected: matieresSelectionnees.contains('Arabe'),
+                          onSelected: (s) {
+                            setState(() {
+                              if (s) {
+                                _selectedMatiereParNiveau[index] = 
+                                  '${_selectedMatiereParNiveau[index] ?? ''}Arabe';
+                              } else {
+                                _selectedMatiereParNiveau[index] = 
+                                  (_selectedMatiereParNiveau[index] ?? '').replaceAll('Arabe', '');
+                              }
+                              if (_selectedMatiereParNiveau[index]?.isEmpty ?? true) {
+                                _selectedMatiereParNiveau[index] = null;
+                              }
+                            });
+                          },
+                          selectedColor: Colors.orange.shade200,
+                          backgroundColor: Colors.black26,
+                          labelStyle: TextStyle(
+                            color: matieresSelectionnees.contains('Arabe') ? Colors.black : Colors.white,
+                            fontSize: 10,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        FilterChip(
+                          label: const Text('Français', style: TextStyle(fontSize: 10)),
+                          selected: matieresSelectionnees.contains('Français'),
+                          onSelected: (s) {
+                            setState(() {
+                              if (s) {
+                                _selectedMatiereParNiveau[index] = 
+                                  '${_selectedMatiereParNiveau[index] ?? ''}Français';
+                              } else {
+                                _selectedMatiereParNiveau[index] = 
+                                  (_selectedMatiereParNiveau[index] ?? '').replaceAll('Français', '');
+                              }
+                              if (_selectedMatiereParNiveau[index]?.isEmpty ?? true) {
+                                _selectedMatiereParNiveau[index] = null;
+                              }
+                            });
+                          },
+                          selectedColor: Colors.orange.shade200,
+                          backgroundColor: Colors.black26,
+                          labelStyle: TextStyle(
+                            color: matieresSelectionnees.contains('Français') ? Colors.black : Colors.white,
+                            fontSize: 10,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -358,74 +368,24 @@ void _loadNiveaux() async {
     );
   }
 
-  Widget _buildMatiereChip(
-      String label,
-      bool cardSelected,
-      bool isSelected,
-      VoidCallback onTap,
-      ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (cardSelected ? Colors.white : const Color(0xFFFBB000))
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : (cardSelected ? Colors.black54 : Colors.white54),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isSelected)
-              Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Icon(
-                  Icons.check,
-                  size: 14,
-                  color: cardSelected ? const Color(0xFFFBB000) : Colors.black,
-                ),
-              ),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: isSelected
-                    ? (cardSelected ? const Color(0xFFFBB000) : Colors.black)
-                    : (cardSelected ? Colors.black87 : Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildContinueButton() {
     return ElevatedButton(
-      onPressed: () {
-        final jobs = <Map<String, dynamic>>[];
+      onPressed: () async {
+        List<Map<String, dynamic>> jobs = [];
         for (int i = 0; i < _levelLabels.length; i++) {
           if (_selectedLevels[i]) {
             final niveau = _levelLabels[i];
             final idNiveau = _niveauIds[i];
-            for (int j = 0; j < _matieresList.length; j++) {
-              if (_matiereSelections[i][j]) {
-                final matiere = _matieresList[j];
-                jobs.add({
-                  'niveau': niveau,
-                  'matiere': matiere['nom'],
-                  'id_niveau': idNiveau,
-                  'id_matiere': matiere['id_matiere'],
-                });
-              }
+            final matieresStr = _selectedMatiereParNiveau[i] ?? '';
+            final List<String> matieres = [];
+            if (matieresStr.contains('Arabe')) matieres.add('Arabe');
+            if (matieresStr.contains('Français')) matieres.add('Français');
+            for (final matiere in matieres) {
+              jobs.add({
+                'niveau': niveau,
+                'matiere': matiere,
+                'id_niveau': idNiveau,
+              });
             }
           }
         }
@@ -435,11 +395,19 @@ void _loadNiveaux() async {
           );
           return;
         }
+        final datasource = EmploiDatasource(SupabaseClientProvider.client);
+        for (final job in jobs) {
+          final idNiveau = job['id_niveau'] as int? ?? 0;
+          final matiere = job['matiere']?.toString() ?? '';
+          final res = await datasource.getCoursByNiveauAndMatiere(idNiveau, matiere);
+          debugPrint('Étape 1 -> Niveau=${job['niveau']}, Matiere=$matiere, total titre_cours=${res.length}');
+        }
+        if (!mounted) return;
         GoRouter.of(context).push('/prof/emploi/create', extra: jobs);
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFFFBB000),
-        minimumSize: const Size(200, 48),
+        minimumSize: const Size(180, 44),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -449,14 +417,27 @@ void _loadNiveaux() async {
         'Continuer',
         style: TextStyle(
           color: Colors.black,
-          fontSize: 15,
+          fontSize: 14,
           fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  Widget _buildBottomNavigationBar() {
+  Widget _buildBottomNavigationBar(bool isMobile) {
+    if (isMobile) {
+      return NavigationBar(
+        selectedIndex: 2,
+        onDestinationSelected: (_) {},
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.layers_outlined), label: 'Cours'),
+          NavigationDestination(icon: Icon(Icons.book_outlined), label: 'Mat'),
+          NavigationDestination(icon: Icon(Icons.calendar_month), label: 'Emploi'),
+          NavigationDestination(icon: Icon(Icons.search), label: 'Rech'),
+          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profil'),
+        ],
+      );
+    }
     return Container(
       width: 420,
       height: 56,

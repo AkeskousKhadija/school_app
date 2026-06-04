@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:school_app/features/auth/presentation/viewmodels/auth_notifier.dart';
 import 'package:school_app/core/errors/failures.dart';
 import 'package:school_app/features/shared/domain/entities/user_role.dart';
+import 'package:school_app/core/theme/app_theme.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -19,6 +20,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < AppBreakpoints.tablet;
 
     String _formatFailure(Object? error) {
       if (error is Failure) return error.message;
@@ -43,9 +46,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
           Center(
             child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 0),
               child: Container(
-                width: 380,
-                padding: const EdgeInsets.all(25),
+                width: isMobile ? screenWidth - 40 : 380,
+                padding: EdgeInsets.all(isMobile ? 20 : 25),
                 decoration: BoxDecoration(
                   color: const Color(0xFF3A98C7),
                   borderRadius: BorderRadius.circular(40),
@@ -60,11 +64,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'Heureux de vous revoir !',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: isMobile ? 18 : 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         letterSpacing: 1.2,
@@ -137,10 +141,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 width: 20,
                                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                               )
-                            : const Text(
+                            : Text(
                                 'Se connecter',
                                 style: TextStyle(
-                                  fontSize: 20,
+                                  fontSize: isMobile ? 16 : 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

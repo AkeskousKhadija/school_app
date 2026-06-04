@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:school_app/core/supabase/supabase_client.dart';
 import 'package:school_app/features/professor/data/datasources/emploi_datasource.dart';
 import 'package:school_app/features/professor/data/repositories/emploi_repository.dart';
+import 'package:school_app/core/theme/app_theme.dart';
 
 class EmploiListPage extends StatefulWidget {
   const EmploiListPage({super.key});
@@ -28,13 +29,16 @@ class _EmploiListPageState extends State<EmploiListPage> {
       final repository = EmploiRepository(EmploiDatasource(client));
       
       final emplois = await repository.getAllEmploisWithDetails();
+      debugPrint('Emplois récupérés: ${emplois.length}');
       
       if (!mounted) return;
       setState(() {
         _emplois = emplois;
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('Erreur chargement emplois: $e');
+      debugPrint('Stack trace: $st');
       if (!mounted) return;
       setState(() {
         _errorMessage = 'Impossible de charger les emplois: $e';
@@ -45,6 +49,9 @@ class _EmploiListPageState extends State<EmploiListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < AppBreakpoints.tablet;
+
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -63,14 +70,14 @@ class _EmploiListPageState extends State<EmploiListPage> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(isMobile ? 16 : 24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Mes Emplois du Temps',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: isMobile ? 20 : 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -88,14 +95,20 @@ class _EmploiListPageState extends State<EmploiListPage> {
                       itemCount: _emplois.length,
                       itemBuilder: (context, index) {
                         final emploi = _emplois[index];
+                        final seance = ( emploi['seance'] as List?)?.firstOrNull;
+                        final cours = seance != null ? Map<String, dynamic>.from(seance['cours'] ?? {}) : <String, dynamic>{};
+                        final niveau = Map<String, dynamic>.from(cours['niveau'] ?? {});
+                        final idEmploi = emploi['id_emploi']?.toString() ?? '—';
+                        final niveauNom = niveau['nom']?.toString() ?? 'N/A';
+                        final matiere = cours['matiere']?.toString() ?? 'N/A';
                         return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 16, vertical: 8),
                           child: ListTile(
-                            title: Text(emploi['matiere']?.toString() ?? 'Sans titre'),
-                            subtitle: Text('Niveau: ${emploi['niveau']?.toString() ?? 'N/A'}'),
+                            title: Text('Emploi #$idEmploi'),
+                            subtitle: Text('Niveau: $niveauNom\nMatière: $matiere'),
                             trailing: const Icon(Icons.arrow_forward_ios),
                             onTap: () {
-                              context.go('/prof/emploi/view', extra: emploi);
+                              context.push('/prof/emploi/view', extra: emploi);
                             },
                           ),
                         );
