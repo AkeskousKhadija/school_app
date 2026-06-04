@@ -215,17 +215,83 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       return const Center(child: Text('Aucun emploi disponible'));
     }
 
+    return _buildGridView();
+  }
+
+  Widget _buildGridView() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 120,
+                height: 45,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text("Parties", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(width: 8),
+              ...List.generate(
+                6,
+                (i) => Expanded(
+                  child: Container(
+                    height: 45,
+                    margin: const EdgeInsets.only(right: 8),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text("Jour ${i + 1}", style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Row(
+              children: [
+                Container(
+                  width: 120,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const RotatedBox(
+                    quarterTurns: 3,
+                    child: Text("1ère Partie", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ...List.generate(
+                  6,
+                  (dayIndex) => _buildDayColumn(dayIndex),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _getSessionsByDay(int dayIndex) {
     final sessionsList = List<Map<String, dynamic>>.from(widget.jobs[currentIndex]['sessions'] ?? []);
+    return sessionsList.where((s) {
+      final idx = s['index'] as int? ?? 0;
+      final col = idx % 6;
+      return col == dayIndex;
+    }).toList();
+  }
 
-    List<Map<String, dynamic>> getSessionsByDay(int dayIndex) {
-      return sessionsList.where((s) {
-        final idx = s['index'] as int? ?? 0;
-        final col = idx % 6;
-        return col == dayIndex;
-      }).toList();
-    }
-
-  Widget buildSessionCell(Map<String, dynamic> session) {
+  Widget _buildSessionCell(Map<String, dynamic> session) {
     final hasSession = session.isNotEmpty;
     final duree = session['duree'];
     final titreCours = session['titre_cours']?.toString() ?? session['matiere']?.toString() ?? '';
@@ -283,89 +349,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-    Widget buildDayColumn(int dayIndex) {
-      final daySessions = getSessionsByDay(dayIndex);
-      return Expanded(
-        child: Column(
-          children: [
-            ...daySessions.map((s) => Expanded(child: buildSessionCell(s))),
-            GestureDetector(
-              onTap: () => _addNewCell(dayIndex),
-              child: Container(
-                margin: const EdgeInsets.only(top: 4),
-                height: 45,
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange),
-                ),
-                child: const Center(
-                  child: Icon(Icons.add, color: Colors.orange),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.all(16),
+  Widget _buildDayColumn(int dayIndex) {
+    final daySessions = _getSessionsByDay(dayIndex);
+    return Expanded(
       child: Column(
         children: [
-          // HEADER JOURS
-          Row(
-            children: [
-              Container(
-                width: 120,
-                height: 45,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text("Parties", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+          ...daySessions.map((s) => Expanded(child: _buildSessionCell(s))),
+          GestureDetector(
+            onTap: () => _addNewCell(dayIndex),
+            child: Container(
+              margin: const EdgeInsets.only(top: 4),
+              height: 45,
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange),
               ),
-              const SizedBox(width: 8),
-              ...List.generate(
-                6,
-                (i) => Expanded(
-                  child: Container(
-                    height: 45,
-                    margin: const EdgeInsets.only(right: 8),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text("Jour ${i + 1}", style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
-                  ),
-                ),
+              child: const Center(
+                child: Icon(Icons.add, color: Colors.orange),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: Row(
-              children: [
-                Container(
-                  width: 120,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const RotatedBox(
-                    quarterTurns: 3,
-                    child: Text("1ère Partie", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ...List.generate(
-                  6,
-                  (dayIndex) => buildDayColumn(dayIndex),
-                ),
-              ],
             ),
           ),
         ],
@@ -480,37 +482,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   GoRouter.of(context).push('/prof/emploi/finalisation');
                 }
               },
-              child: const Text(
-                "Suivant",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                minimumSize: const Size(180, 42),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onPressed: () async {
-                await _saveAllEmplois();
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Emploi enregistré')),
-                );
-              },
-              child: const Text(
-                "Enregistrer",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
+child: const Text(
+                 "Suivant",
+                 style: TextStyle(color: Colors.white),
+               ),
+             ),
+           ],
+         ),
+       ],
+     );
+   }
 
   void _showMatiereDialog(int index) {
     final currentJob = widget.jobs[currentIndex];
