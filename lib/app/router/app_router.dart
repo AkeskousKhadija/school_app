@@ -10,6 +10,7 @@ import 'package:school_app/features/admin/presentation/pages/admin_dashboard.dar
 import 'package:school_app/features/professor/presentation/pages/create_emploi_page.dart';
 import 'package:school_app/features/professor/presentation/pages/emploi_du_temps_page.dart';
 import 'package:school_app/features/professor/presentation/pages/emploi_list_page.dart';
+import 'package:school_app/features/professor/presentation/pages/emploi_finalisation_page.dart';
 import 'package:school_app/features/professor/presentation/pages/emploi_view_page.dart';
 import 'package:school_app/features/professor/presentation/pages/professor_dashboard.dart';
 import 'package:school_app/features/student/presentation/pages/student_dashboard.dart';
@@ -79,6 +80,10 @@ routes: [
       GoRoute(
         path: '/prof/emploi/list',
         builder: (context, state) => const EmploiListPage(),
+      ),
+      GoRoute(
+        path: '/prof/emploi/finalisation',
+        builder: (context, state) => const EmploiFinalisationPage(),
       ),
       GoRoute(
         path: '/prof/emploi/view',

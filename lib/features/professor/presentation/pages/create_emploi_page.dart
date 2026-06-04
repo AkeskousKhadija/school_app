@@ -38,7 +38,6 @@ class ScheduleScreen extends StatefulWidget {
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
   int currentIndex = 0;
-  final Map<int, List<Map<String, dynamic>>> _originalSessionsByJob = {};
 
   @override
   void initState() {
@@ -55,22 +54,41 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         final matiere = job['matiere']?.toString() ?? '';
         if (idNiveau == null || matiere.isEmpty) continue;
 
+        widget.jobs[jobIdx]['sessions'] = [];
+
         final datasource = EmploiDatasource(client);
         final existingSessions = await datasource.getSessionsForJob(idNiveau, matiere);
+        final currentIdEmploi = job['id_emploi'] as int?;
+        final filtered = currentIdEmploi == null
+            ? existingSessions
+            : existingSessions.where((s) => s['id_emploi'] == currentIdEmploi).toList();
 
-        final existingIndexed = existingSessions.where((s) => s['numero_jour'] != null).map((s) {
-          return <String, dynamic>{
-            'index': (s['numero_jour'] as int) - 1,
-            'titre_cours': s['contenu']?.toString() ?? '',
-            'id_cours': s['id_cours'],
-            'id_seance': s['id_seance'],
-            'id_emploi': s['id_emploi'],
-            'duree': s['duree']?.toString() ?? (s['numero_ordre']?.toString() ?? ''),
-            'numero_ordre': s['numero_ordre'],
-          };
-        }).toList();
+        final existingIndexed = <Map<String, dynamic>>[];
+        final grouped = <int, List<Map<String, dynamic>>>{};
+        for (final s in filtered) {
+          final jour = s['numero_jour'] as int?;
+          if (jour == null) continue;
+          grouped.putIfAbsent(jour, () => []).add(s);
+        }
+        final sortedDays = grouped.keys.toList()..sort();
+        for (final jour in sortedDays) {
+          final list = grouped[jour]!;
+          list.sort((a, b) => (a['numero_ordre'] ?? 0).compareTo(b['numero_ordre'] ?? 0));
+          for (var i = 0; i < list.length; i++) {
+            final s = list[i];
+            existingIndexed.add({
+              'index': i * 6 + (jour - 1),
+              'titre_cours': s['contenu']?.toString() ?? '',
+              'id_cours': s['id_cours'],
+              'id_seance': s['id_seance'],
+              'id_emploi': s['id_emploi'],
+              'duree': s['duree']?.toString() ?? (s['numero_ordre']?.toString() ?? ''),
+              'numero_ordre': s['numero_ordre'],
+            });
+          }
+        }
 
-        final currentList = List<Map<String, dynamic>>.from(job['sessions'] ?? []);
+        final currentList = List<Map<String, dynamic>>.from(widget.jobs[jobIdx]['sessions'] ?? []);
         final currentIndexes = currentList.map((s) => s['index'] as int? ?? -1).toSet();
 
         for (var existing in existingIndexed) {
@@ -78,8 +96,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             currentList.add(existing);
           }
         }
-        job['sessions'] = currentList;
-        _originalSessionsByJob[jobIdx] = List<Map<String, dynamic>>.from(currentList);
+        widget.jobs[jobIdx]['sessions'] = currentList;
+        final first = currentList.firstOrNull;
+        if (first != null && first['id_emploi'] != null) {
+          widget.jobs[jobIdx]['id_emploi'] = first['id_emploi'];
+        }
       }
     } catch (e) {
       debugPrint('Erreur chargement sessions existantes: $e');
@@ -204,64 +225,63 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       }).toList();
     }
 
-    Widget buildSessionCell(Map<String, dynamic> session) {
-      final hasSession = session.isNotEmpty;
-      final isNewCell = (session['id_seance'] == null);
-      final duree = session['duree'];
-      final titreCours = session['titre_cours']?.toString() ?? session['matiere']?.toString() ?? '';
-      final showContent = hasSession && (titreCours.isNotEmpty || (duree != null && duree != 0));
+  Widget buildSessionCell(Map<String, dynamic> session) {
+    final hasSession = session.isNotEmpty;
+    final duree = session['duree'];
+    final titreCours = session['titre_cours']?.toString() ?? session['matiere']?.toString() ?? '';
+    final showContent = hasSession && (titreCours.isNotEmpty || (duree != null && duree != 0));
 
-      return GestureDetector(
-        onTap: () => _showMatiereDialog((session['index'] as int?) ?? 0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: showContent ? const Color(0xFFFF7F50).withValues(alpha: 0.8) : Colors.orange.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
-          ),
-          child: Stack(
-            children: [
-              Center(
-                child: showContent
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            titreCours,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${duree ?? 0} min',
-                            style: const TextStyle(color: Colors.white70, fontSize: 10),
-                          ),
-                        ],
-                      )
-                    : const Icon(Icons.add, color: Colors.orange, size: 18),
-              ),
-              Positioned(
-                top: 2,
-                right: 2,
-                child: GestureDetector(
-                  onTap: () => _deleteCell((session['index'] as int?) ?? 0, isNewCell: isNewCell),
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.close, size: 12, color: Colors.white),
+    return GestureDetector(
+      onTap: () => _showMatiereDialog((session['index'] as int?) ?? 0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: showContent ? const Color(0xFFFF7F50).withValues(alpha: 0.8) : Colors.orange.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
+        ),
+        child: Stack(
+          children: [
+            Center(
+              child: showContent
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          titreCours,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${duree ?? 0} min',
+                          style: const TextStyle(color: Colors.white70, fontSize: 10),
+                        ),
+                      ],
+                    )
+                  : const Icon(Icons.add, color: Colors.orange, size: 18),
+            ),
+            Positioned(
+              top: 2,
+              right: 2,
+              child: GestureDetector(
+                onTap: () => _deleteCell((session['index'] as int?) ?? 0, hasContent: showContent),
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
                   ),
+                  child: const Icon(Icons.close, size: 12, color: Colors.white),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
     Widget buildDayColumn(int dayIndex) {
       final daySessions = getSessionsByDay(dayIndex);
@@ -378,11 +398,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     setState(() {});
   }
 
-  void _deleteCell(int index, {bool isNewCell = false}) {
+  void _deleteCell(int index, {required bool hasContent}) {
     final job = widget.jobs[currentIndex];
     final sessions = List<Map<String, dynamic>>.from(job['sessions'] ?? []);
 
-    if (isNewCell) {
+    if (!hasContent) {
       sessions.removeWhere((s) => (s['index'] as int?) == index);
       widget.jobs[currentIndex]['sessions'] = sessions;
       setState(() {});
@@ -441,29 +461,56 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             style: TextStyle(color: Colors.white),
           ),
         ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange,
-            minimumSize: const Size(140, 42),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-          onPressed: () async {
-            if (!isLast) {
-              setState(() {
-                currentIndex++;
-              });
-            } else {
-              await _saveAllEmplois();
-            }
-          },
-          child: Text(
-            isLast ? "Enregistrer" : "Suivant",
-            style: const TextStyle(color: Colors.white),
-          ),
+        Row(
+          children: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                minimumSize: const Size(140, 42),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () async {
+                await _saveAllEmplois();
+                if (!mounted) return;
+                if (!isLast) {
+                  setState(() {
+                    currentIndex++;
+                  });
+                } else {
+                  GoRouter.of(context).push('/prof/emploi/finalisation');
+                }
+              },
+              child: const Text(
+                "Suivant",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                minimumSize: const Size(180, 42),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () async {
+                await _saveAllEmplois();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Emploi enregistré')),
+                );
+              },
+              child: const Text(
+                "Enregistrer",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
+}
+
 
   void _showMatiereDialog(int index) {
     final currentJob = widget.jobs[currentIndex];
@@ -651,127 +698,122 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     try {
       final client = SupabaseClientProvider.client;
 
-      for (var job in widget.jobs) {
-        final sessions = List<Map<String, dynamic>>.from(job['sessions'] ?? []);
-        if (sessions.isEmpty) continue;
+        for (final job in widget.jobs) {
+          final sessions = List<Map<String, dynamic>>.from(job['sessions'] ?? []);
+          if (sessions.isEmpty) continue;
+          final idNiveau = job['id_niveau'] as int?;
+          final matiere = job['matiere']?.toString() ?? 'Arabe';
+          if (idNiveau == null) continue;
 
-        final idNiveau = job['id_niveau'] as int?;
-        final matiere = job['matiere']?.toString() ?? 'Arabe';
-        if (idNiveau == null) continue;
+          final indexed = sessions.where((s) => s['index'] != null).toList();
+          indexed.sort((a, b) => (a['index'] as int).compareTo(b['index'] as int));
 
-        final indexed = sessions.where((s) => s['index'] != null).toList();
-        indexed.sort((a, b) => (a['index'] as int).compareTo(b['index'] as int));
-
-        final expanded = <Map<String, dynamic>>[];
-        for (final session in indexed) {
-          final dureeRaw = session['duree'] ?? '45';
-          final duree = int.tryParse(dureeRaw.toString()) ?? 45;
-          final partCount = (duree / 135).ceil();
-          for (int i = 0; i < partCount; i++) {
-            final partDuree = i == partCount - 1 ? duree - 135 * i : 135;
-            if (partDuree <= 0) continue;
-            final copy = Map<String, dynamic>.from(session);
-            copy['duree'] = partDuree;
-            copy['_partIndex'] = i;
-            expanded.add(copy);
+          final expanded = <Map<String, dynamic>>[];
+          for (final session in indexed) {
+            final dureeRaw = session['duree'] ?? '45';
+            final duree = int.tryParse(dureeRaw.toString()) ?? 45;
+            final partCount = (duree / 135).ceil();
+            for (int i = 0; i < partCount; i++) {
+              final partDuree = i == partCount - 1 ? duree - 135 * i : 135;
+              if (partDuree <= 0) continue;
+              final copy = Map<String, dynamic>.from(session);
+              copy['duree'] = partDuree;
+              copy['_partIndex'] = i;
+              expanded.add(copy);
+            }
           }
-        }
-        final byIndex = <int, List<Map<String, dynamic>>>{};
-        for (final item in expanded) {
-          final idx = item['index'] as int? ?? 0;
-          byIndex.putIfAbsent(idx, () => []).add(item);
-        }
-        final finalIndexed = <Map<String, dynamic>>[];
-        final counts = <String, int>{};
-        for (final idx in byIndex.keys.toList()..sort()) {
-          final group = byIndex[idx]!;
-          group.sort((a, b) => (a['_partIndex'] as int).compareTo(b['_partIndex'] as int));
-          for (final item in group) {
-            final key = (item['titre_cours'] ?? item['matiere'] ?? '').toString();
-            counts[key] = (counts[key] ?? 0) + 1;
-            item['numero_ordre'] = counts[key];
-            finalIndexed.add(item);
+          final byIndex = <int, List<Map<String, dynamic>>>{};
+          for (final item in expanded) {
+            final idx = item['index'] as int? ?? 0;
+            byIndex.putIfAbsent(idx, () => []).add(item);
           }
-        }
-
-        final originalList = _originalSessionsByJob[widget.jobs.indexOf(job)] ?? const [];
-        final originalById = <int, Map<String, dynamic>>{};
-        final originalIdEmploi = originalList.isEmpty ? null : (originalList.first['id_emploi'] as int?);
-        for (final s in originalList) {
-          final idSeance = s['id_seance'] as int?;
-          if (idSeance != null) originalById[idSeance] = s;
-        }
-
-        final currentIds = finalIndexed.where((s) => s['id_seance'] != null).map((s) => s['id_seance'] as int).toSet();
-        final toDelete = originalById.keys.where((id) => !currentIds.contains(id)).toList();
-
-        int? idEmploi = originalIdEmploi;
-        if (idEmploi == null) {
-          final emploiResponse = await client
-              .from('emploi_du_temps')
-              .insert({})
-              .select()
-              .maybeSingle();
-
-          if (emploiResponse == null || emploiResponse['id_emploi'] == null) {
-            throw Exception('Échec création emploi_du_temps');
-          }
-          idEmploi = emploiResponse['id_emploi'] as int;
-        }
-
-        for (final idSeance in toDelete) {
-          await client.from('seance').delete().eq('id_seance', idSeance);
-        }
-
-        for (final session in finalIndexed) {
-          final duree = session['duree'] ?? 45;
-          final index = session['index'] as int? ?? 0;
-          final numeroJour = (index % 6) + 1;
-          final titreCours = session['titre_cours']?.toString() ?? '';
-
-          int? sessionIdCours = session['id_cours'] as int?;
-          if (sessionIdCours == null && titreCours.isNotEmpty) {
-            final existing = await client
-                .from('cours')
-                .select('id_cours')
-                .eq('id_niveau', idNiveau)
-                .eq('titre_cours', titreCours)
-                .maybeSingle();
-            if (existing != null) {
-              sessionIdCours = existing['id_cours'] as int;
-            } else {
-              final nouveauCours = await client
-                  .from('cours')
-                  .insert({
-                    'id_niveau': idNiveau,
-                    'matiere': matiere,
-                    'titre_cours': titreCours,
-                  })
-                  .select('id_cours')
-                  .maybeSingle();
-              if (nouveauCours != null) {
-                sessionIdCours = nouveauCours['id_cours'] as int;
-              }
+          final finalIndexed = <Map<String, dynamic>>[];
+          final counts = <String, int>{};
+          for (final idx in byIndex.keys.toList()..sort()) {
+            final group = byIndex[idx]!;
+            group.sort((a, b) => (a['_partIndex'] as int).compareTo(b['_partIndex'] as int));
+            for (final item in group) {
+              final key = (item['titre_cours'] ?? item['matiere'] ?? '').toString();
+              counts[key] = (counts[key] ?? 0) + 1;
+              item['numero_ordre'] = counts[key];
+              finalIndexed.add(item);
             }
           }
 
-          final idSeance = session['id_seance'] as int?;
-          final data = <String, dynamic>{
-            'contenu': session['titre_cours'] ?? session['matiere'] ?? '',
-            'numero_ordre': session['numero_ordre'] as int?,
-            'duree': duree is int ? duree : int.tryParse(duree.toString()),
-            'numero_jour': numeroJour,
-            'id_emploi': idEmploi,
-            'id_cours': sessionIdCours,
-          };
-
-          if (idSeance != null) {
-            await client.from('seance').update(data).eq('id_seance', idSeance);
-          } else {
-            await client.from('seance').insert(data);
+          int? idEmploi = job['id_emploi'] as int?;
+          if (idEmploi == null) {
+            final emploiResponse = await client
+                .from('emploi_du_temps')
+                .insert({})
+                .select()
+                .maybeSingle();
+            if (emploiResponse == null || emploiResponse['id_emploi'] == null) {
+              throw Exception('Échec création emploi_du_temps');
+            }
+            idEmploi = emploiResponse['id_emploi'] as int;
+            job['id_emploi'] = idEmploi;
           }
+
+          final idCoursList = finalIndexed.map((s) => s['id_cours'] as int?).whereType<int>().toSet().toList();
+          final existingRows = idCoursList.isEmpty ? [] : await client
+              .from('seance')
+              .select('id_seance')
+              .eq('id_emploi', idEmploi)
+              .inFilter('id_cours', idCoursList);
+          final existingIds = (existingRows as List).map((e) => e['id_seance'] as int).toSet();
+          final remainingIds = finalIndexed.map((s) => s['id_seance'] as int? ).whereType<int>().toSet();
+          final toDelete = existingIds.where((id) => !remainingIds.contains(id)).toList();
+          for (final idSeance in toDelete) {
+            await client.from('seance').delete().eq('id_seance', idSeance);
+          }
+
+          for (final session in finalIndexed) {
+            final duree = session['duree'] ?? 45;
+            final index = session['index'] as int? ?? 0;
+            final numeroJour = (index % 6) + 1;
+            final titreCours = session['titre_cours']?.toString() ?? '';
+            int? sessionIdCours = session['id_cours'] as int?;
+            if (sessionIdCours == null && titreCours.isNotEmpty) {
+              final existing = await client
+                  .from('cours')
+                  .select('id_cours')
+                  .eq('id_niveau', idNiveau)
+                  .eq('titre_cours', titreCours)
+                  .maybeSingle();
+              if (existing != null) {
+                sessionIdCours = existing['id_cours'] as int;
+              } else {
+                final nouveauCours = await client
+                    .from('cours')
+                    .insert({
+                      'id_niveau': idNiveau,
+                      'matiere': matiere,
+                      'titre_cours': titreCours,
+                    })
+                    .select('id_cours')
+                    .maybeSingle();
+                if (nouveauCours != null) {
+                  sessionIdCours = nouveauCours['id_cours'] as int;
+                }
+              }
+            }
+            final idSeance = session['id_seance'] as int?;
+            final data = <String, dynamic>{
+              'contenu': session['titre_cours'] ?? session['matiere'] ?? '',
+              'numero_ordre': session['numero_ordre'] as int?,
+              'duree': duree is int ? duree : int.tryParse(duree.toString()),
+              'numero_jour': numeroJour,
+              'id_emploi': idEmploi,
+              'id_cours': sessionIdCours,
+            };
+            if (idSeance != null) {
+              await client.from('seance').update(data).eq('id_seance', idSeance);
+            } else {
+              await client.from('seance').insert(data);
+            }
+          }
+          job['sessions'] = finalIndexed;
         }
-      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

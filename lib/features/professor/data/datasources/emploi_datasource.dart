@@ -58,7 +58,9 @@ class EmploiDatasource {
     final seancesResponse = await client
         .from('seance')
         .select('id_seance, contenu, numero_ordre, duree, numero_jour, id_cours, id_emploi')
-        .inFilter('id_cours', idsCours);
+        .inFilter('id_cours', idsCours)
+        .order('numero_jour')
+        .order('numero_ordre');
     return List<Map<String, dynamic>>.from(seancesResponse);
   }
 
@@ -86,9 +88,24 @@ class EmploiDatasource {
 
   Future<List<Map<String, dynamic>>> getAllEmploisWithDetails() async {
     final response = await client
-        .from('emploi_du_temps')
-        .select('id_emploi, seance!inner(id_cours, cours!inner(id_niveau, nom, titre_cours, matiere))');
+        .from('seance')
+        .select('id_emploi, cours!inner(id_cours, matiere, id_niveau, niveau!inner(id_niveau, nom))');
     final List<dynamic> raw = List<dynamic>.from(response);
-    return raw.map((e) => Map<String, dynamic>.from(e)).toList();
+    final Map<int, Map<String, dynamic>> uniqueEmplois = {};
+    for (final item in raw) {
+      final map = Map<String, dynamic>.from(item);
+      final idEmploi = map['id_emploi'] as int?;
+      if (idEmploi != null && !uniqueEmplois.containsKey(idEmploi)) {
+        final cours = Map<String, dynamic>.from(map['cours'] ?? {});
+        final niveau = Map<String, dynamic>.from(cours['niveau'] ?? {});
+        uniqueEmplois[idEmploi] = {
+          'id_emploi': idEmploi,
+          'id_niveau': cours['id_niveau'],
+          'niveau': niveau['nom'],
+          'matiere': cours['matiere'],
+        };
+      }
+    }
+    return uniqueEmplois.values.toList();
   }
 }

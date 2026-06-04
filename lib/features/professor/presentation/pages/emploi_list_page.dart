@@ -95,12 +95,9 @@ class _EmploiListPageState extends State<EmploiListPage> {
                       itemCount: _emplois.length,
                       itemBuilder: (context, index) {
                         final emploi = _emplois[index];
-                        final seance = ( emploi['seance'] as List?)?.firstOrNull;
-                        final cours = seance != null ? Map<String, dynamic>.from(seance['cours'] ?? {}) : <String, dynamic>{};
-                        final niveau = Map<String, dynamic>.from(cours['niveau'] ?? {});
                         final idEmploi = emploi['id_emploi']?.toString() ?? '—';
-                        final niveauNom = niveau['nom']?.toString() ?? 'N/A';
-                        final matiere = cours['matiere']?.toString() ?? 'N/A';
+                        final niveauNom = emploi['niveau']?.toString() ?? 'N/A';
+                        final matiere = emploi['matiere']?.toString() ?? 'N/A';
                         return Card(
                           margin: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 16, vertical: 8),
                           child: ListTile(

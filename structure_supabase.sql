@@ -16,8 +16,7 @@ create table cours (
 );
 
 create table emploi_du_temps (
-  id_emploi serial primary key,
-  id_cours int references cours(id_cours) on delete cascade
+  id_emploi serial primary key
 );
 
 create table seance (
